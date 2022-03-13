@@ -46,6 +46,7 @@ bin/
 
 # Chisel elaboration
 output/
+test_run_dir/
 
 # VCD files
 dump.vcd

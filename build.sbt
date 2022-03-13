@@ -16,7 +16,8 @@ lazy val root = (project in file("."))
             "-language:reflectiveCalls",
             "-deprecation",
             "-feature",
-            "-Xcheckinit"
+            "-Xcheckinit",
+            "-Ymacro-annotations"
         ),
         addCompilerPlugin("edu.berkeley.cs" % "chisel3-plugin" % chiselVersion cross CrossVersion.full)
     )
