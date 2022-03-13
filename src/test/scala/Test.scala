@@ -11,7 +11,7 @@ class Test extends AnyFlatSpec with ChiselScalatestTester {
     val annos = Seq(WriteVcdAnnotation)
 
     it should "write data" in {
-        test(new AXItoSRAMWrapper(2, 32, 64, 2048, 64, true)).withAnnotations(annos) { dut =>
+        test(new AXItoSRAMWrapper(2, 32, 64, 2048, true)).withAnnotations(annos) { dut =>
 
             val len = 255
 

@@ -11,14 +11,12 @@ import chisel3.util.{isPow2, Log2}
  */
 class AXItoSRAM(val AxiIdWidth           : Int,
                 val AxiAddrWidth         : Int,
-                val AxiDataWidth         : Int,
+                val DataWidth            : Int,
                 val SramDepth            : Int,
-                val SramWidth            : Int,
                 val SramHasByteEnable    : Boolean) extends RawModule {
 
-    require(isPow2(AxiDataWidth))
+    require(isPow2(DataWidth))
     require(isPow2(SramDepth))
-    require(isPow2(SramWidth))
 
     // =========================================================================
     // I/O
@@ -29,11 +27,11 @@ class AXItoSRAM(val AxiIdWidth           : Int,
     val ARESETn     = IO(Input(Bool()))
 
     // AXI4 Interface
-    val S_AXI       = IO(Flipped(new AXI4Intf(AxiIdWidth, AxiAddrWidth, AxiDataWidth)))
+    val S_AXI       = IO(Flipped(new AXI4Intf(AxiIdWidth, AxiAddrWidth, DataWidth)))
 
     // SRAM Interface
     val SramAddrWidth = log2(SramDepth)
-    val SRAM        = IO(new SRAMSingleIntf(SramAddrWidth, SramWidth, SramHasByteEnable))
+    val SRAM        = IO(new SRAMSingleIntf(SramAddrWidth, DataWidth, SramHasByteEnable))
 
 
     // =========================================================================
@@ -53,8 +51,8 @@ class AXItoSRAM(val AxiIdWidth           : Int,
 
     withClockAndReset(ACLK, reset) {
 
-        val wrIE    = Module(new WriteInterfaceEngine(AxiIdWidth, AxiAddrWidth, AxiDataWidth))
-        val rdIE    = Module(new ReadInterfaceEngine(AxiIdWidth, AxiAddrWidth, AxiDataWidth))
+        val wrIE    = Module(new WriteInterfaceEngine(AxiIdWidth, AxiAddrWidth, DataWidth))
+        val rdIE    = Module(new ReadInterfaceEngine(AxiIdWidth, AxiAddrWidth, DataWidth))
         val arbiter = Module(new SRAMArbiter)
 
         wrIE.ACLK       := ACLK

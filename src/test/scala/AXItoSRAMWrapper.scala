@@ -21,25 +21,23 @@ class TestMemory(   val AddrWidth: Int,
 
 class AXItoSRAMWrapper( val AxiIdWidth           : Int,
                         val AxiAddrWidth         : Int,
-                        val AxiDataWidth         : Int,
+                        val DataWidth            : Int,
                         val SramDepth            : Int,
-                        val SramWidth            : Int,
                         val SramHasByteEnable    : Boolean) extends Module {
 
     // AXI4 Interface
-    val S_AXI       = IO(Flipped(new AXI4Intf(AxiIdWidth, AxiAddrWidth, AxiDataWidth)))
+    val S_AXI       = IO(Flipped(new AXI4Intf(AxiIdWidth, AxiAddrWidth, DataWidth)))
 
     // Test Memory
     val SramAddrWidth = log2(SramDepth)
-    val mem = Module(new TestMemory(SramAddrWidth, SramWidth, SramHasByteEnable))
+    val mem = Module(new TestMemory(SramAddrWidth, DataWidth, SramHasByteEnable))
 
     // Axi2Sram
     val inst = Module(new AXItoSRAM(
                             AxiIdWidth,
                             AxiAddrWidth,
-                            AxiDataWidth,
+                            DataWidth,
                             SramDepth,
-                            SramWidth,
                             SramHasByteEnable)
                     )
 
