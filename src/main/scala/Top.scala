@@ -6,17 +6,13 @@ import chisel3.stage.ChiselStage
 
 object Main extends App {
 
-    val AxiIdWidth      = 2
-    val AxiAddrWidth    = 32
+    val IdWidth         = 4
+    val AddrWidth       = 32
     val DataWidth       = 64
-    val SramDepth       = (1 << 12)
-    val SramHasByteEn   = true
     (new ChiselStage).emitVerilog(
-        new AXItoSRAM(  AxiIdWidth,
-                        AxiAddrWidth,
-                        DataWidth,
-                        SramDepth,
-                        SramHasByteEn),
+        new AXItoSRAM(  IdWidth,
+                        AddrWidth,
+                        DataWidth),
         Array("--target-dir", "output/")
     )
 }

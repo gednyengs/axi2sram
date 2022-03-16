@@ -9,14 +9,11 @@ import chisel3.util.{isPow2, Log2}
 /**
  *
  */
-class AXItoSRAM(val AxiIdWidth           : Int,
-                val AxiAddrWidth         : Int,
-                val DataWidth            : Int,
-                val SramDepth            : Int,
-                val SramHasByteEnable    : Boolean) extends RawModule {
+class AXItoSRAM(val IdWidth           : Int,
+                val AddrWidth         : Int,
+                val DataWidth         : Int) extends RawModule {
 
     require(isPow2(DataWidth))
-    require(isPow2(SramDepth))
 
     // =========================================================================
     // I/O
@@ -27,11 +24,10 @@ class AXItoSRAM(val AxiIdWidth           : Int,
     val ARESETn     = IO(Input(Bool()))
 
     // AXI4 Interface
-    val S_AXI       = IO(Flipped(new AXI4Intf(AxiIdWidth, AxiAddrWidth, DataWidth)))
+    val S_AXI       = IO(Flipped(new AXI4Intf(IdWidth, AddrWidth, DataWidth)))
 
     // SRAM Interface
-    val SramAddrWidth = log2(SramDepth)
-    val SRAM        = IO(new SRAMSingleIntf(SramAddrWidth, DataWidth, SramHasByteEnable))
+    val SRAM        = IO(new SRAMSingleIntf(AddrWidth, DataWidth))
 
 
     // =========================================================================
@@ -47,13 +43,11 @@ class AXItoSRAM(val AxiIdWidth           : Int,
     val axi4RdView  = S_AXI.viewAs[AXI4RdIntfView]
     val axi4WrView  = S_AXI.viewAs[AXI4WrIntfView]
 
-    val sramAddr    = Wire(UInt(AxiAddrWidth.W))
-
     withClockAndReset(ACLK, reset) {
 
-        val wrIE    = Module(new WriteInterfaceEngine(AxiIdWidth, AxiAddrWidth, DataWidth))
-        val rdIE    = Module(new ReadInterfaceEngine(AxiIdWidth, AxiAddrWidth, DataWidth))
-        val arbiter = Module(new SRAMArbiter)
+        val wrIE    = Module(new WriteEngine(IdWidth, AddrWidth, DataWidth))
+        val rdIE    = Module(new ReadEngine(IdWidth, AddrWidth, DataWidth))
+        val arbiter = Module(new SramArbiter)
 
         wrIE.ACLK       := ACLK
         wrIE.ARESETn    := ARESETn
@@ -69,17 +63,14 @@ class AXItoSRAM(val AxiIdWidth           : Int,
         arbiter.ACLK    := ACLK
         arbiter.ARESETn := ARESETn
         arbiter.WrValid := wrIE.Valid
-        arbiter.WrLast  := wrIE.Last
         arbiter.RdValid := rdIE.Valid
-        arbiter.RdLast  := rdIE.Last
 
-        sramAddr        := Mux(arbiter.Selected, wrIE.Addr, rdIE.Addr)
-        SRAM.ADDR       := sramAddr(SramAddrWidth-1, 0)
-        SRAM.CEn        := ~((arbiter.Selected & wrIE.Valid) | (~arbiter.Selected & rdIE.Valid))
+        SRAM.ADDR       := Mux(wrIE.Ready, wrIE.Addr, rdIE.Addr)
+        SRAM.CEn        := ~((wrIE.Ready & wrIE.Valid) | (rdIE.Ready & rdIE.Valid))
         SRAM.WDATA      := wrIE.Data
-        SRAM.WEn        := ~arbiter.Selected | ~wrIE.Valid
+        SRAM.WEn        := ~(wrIE.Ready & wrIE.Valid)
+        SRAM.WBEn       := ~wrIE.Strb
 
-        SRAM.WBEn.foreach (x => x := ~wrIE.Strb)
 
     } // withClockAndReset(ACLK, reset)
 }
