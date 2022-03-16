@@ -8,9 +8,9 @@ import chisel3.experimental.ChiselEnum
 /**
  *
  */
-class ReadEngine(  val IdWidth: Int,
-                            val AddrWidth: Int,
-                            val DataWidth: Int ) extends RawModule {
+class ReadEngine(   val IdWidth: Int,
+                    val AddrWidth: Int,
+                    val DataWidth: Int ) extends RawModule {
 
 
     // =========================================================================
