@@ -11,8 +11,8 @@ This interface converter is parameterized over:
 - the size of the data ports
 
 It also:
-- supports for write byte enable signals
-- single-port SRAM interface
+- supports write byte enable signals
+- supports single-port SRAM interface
 
 ## Chisel Generation
 
